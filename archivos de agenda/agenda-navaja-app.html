@@ -1,0 +1,2620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda NAVAJA - Versión APP</title>
+    
+    <!-- PWA - Configuración para app instalable -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NAVAJA">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%234f46e5' width='100' height='100' rx='20'/%3E%3Ctext x='50' y='70' font-size='60' text-anchor='middle' fill='white'%3E📅%3C/text%3E%3C/svg%3E">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: rgba(26, 32, 44, 0.7);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+            margin-bottom: 30px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #818cf8;
+            text-align: center;
+        }
+
+        .calendar-container {
+            background: rgba(45, 55, 72, 0.5);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .calendar-header h2 {
+            font-size: 2rem;
+            color: #a5b4fc;
+            flex: 1;
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #4338ca;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-nav {
+            background: #374151;
+            padding: 10px 20px;
+        }
+
+        .btn-nav:hover {
+            background: #4b5563;
+        }
+
+        .btn-small {
+            padding: 10px 18px;
+            font-size: 1rem;
+            min-width: 50px;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+        
+        .btn-info {
+            background: #0891b2;
+        }
+
+        .btn-info:hover {
+            background: #0e7490;
+        }
+
+        .btn-print {
+            background: #9ca3af;
+        }
+
+        .btn-print:hover {
+            background: #6b7280;
+        }
+
+        .btn-success {
+            background: #10b981;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        /* Botones de compartir - MÁS VISIBLES */
+        .btn-whatsapp {
+            background: #25d366 !important;
+            font-size: 1.2rem;
+        }
+
+        .btn-whatsapp:hover {
+            background: #20ba5a !important;
+            transform: scale(1.1);
+        }
+
+        .btn-telegram {
+            background: #0088cc !important;
+            font-size: 1.2rem;
+        }
+
+        .btn-telegram:hover {
+            background: #0077b5 !important;
+            transform: scale(1.1);
+        }
+
+        /* Botón de voz */
+        .btn-voice {
+            background: #8b5cf6 !important;
+            font-size: 1.2rem;
+        }
+
+        .btn-voice:hover {
+            background: #7c3aed !important;
+            transform: scale(1.1);
+        }
+
+        .btn-voice.speaking {
+            background: #f59e0b !important;
+            animation: pulse 1s infinite;
+        }
+
+        /* Botón de copiar */
+        .btn-copy {
+            background: #6366f1 !important;
+            font-size: 1.2rem;
+        }
+
+        .btn-copy:hover {
+            background: #4f46e5 !important;
+            transform: scale(1.1);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .calendar-days-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 600;
+            color: #94a3b8;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .calendar-day {
+            background: rgba(55, 65, 81, 0.8);
+            border: 2px solid rgba(75, 85, 99, 0.5);
+            border-radius: 10px;
+            padding: 15px 10px;
+            min-height: 100px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            background: rgba(75, 85, 99, 0.8);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .calendar-day.empty {
+            background: rgba(26, 32, 44, 0.3);
+            cursor: default;
+        }
+
+        .calendar-day.empty:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .calendar-day.today {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: #10b981;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .calendar-day.holiday {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: #ef4444;
+        }
+        
+        .calendar-day.weekend.weekend-saturday {
+            background: rgba(255, 179, 179, 0.3); 
+            border-color: #ffb3b3;
+        }
+
+        .calendar-day.weekend.weekend-sunday {
+            background: rgba(255, 77, 77, 0.3); 
+            border-color: #ff4d4d;
+        }
+
+        .day-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .today .day-number {
+            color: #10b981;
+        }
+
+        .holiday .day-number {
+            color: #ef4444;
+        }
+
+        .event-badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-top: 5px;
+            display: inline-block;
+            font-weight: 600;
+        }
+
+        .event-badge.cita {
+            background: rgba(239, 68, 68, 0.5);
+            color: #fecaca;
+        }
+
+        .event-badge.idea {
+            background: rgba(234, 179, 8, 0.5);
+            color: #fef08a;
+        }
+
+        .event-badge.documento {
+            background: rgba(59, 130, 246, 0.5);
+            color: #bfdbfe;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(26, 32, 44, 0.95);
+            backdrop-filter: blur(10px);
+            border-top: 2px solid rgba(99, 102, 241, 0.3);
+            padding: 10px;
+            z-index: 1000;
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(9, 1fr); 
+            gap: 5px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            color: #94a3b8;
+        }
+
+        .nav-item:hover {
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+        }
+
+        .nav-item.active {
+            background: #4f46e5;
+            color: white;
+        }
+
+        .nav-icon {
+            font-size: 1.8rem;
+            margin-bottom: 3px;
+        }
+
+        .nav-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1.1;
+            text-align: center;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1f2937;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(99, 102, 241, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .modal-header h3 {
+            font-size: 1.8rem;
+            color: #a5b4fc;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: color 0.3s;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            color: #ef4444;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #cbd5e1;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #374151;
+            border-radius: 8px;
+            background: #111827;
+            color: white;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .form-group input[type="color"] {
+            padding: 3px;
+            height: 40px;
+            border: none;
+            border-radius: 4px;
+            background: #1f2937;
+        }
+
+        .form-group input[type="file"] {
+            padding: 8px;
+            border: 2px dashed #374151;
+            cursor: pointer;
+        }
+
+        .form-group input[type="file"]:hover {
+            border-color: #6366f1;
+        }
+
+        .file-preview {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .file-preview img {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 8px;
+            border: 2px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .file-preview-name {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .toggle-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(55, 65, 81, 0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .toggle {
+            width: 50px;
+            height: 26px;
+            background: #374151;
+            border-radius: 13px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle.active {
+            background: #6366f1;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s;
+        }
+
+        .toggle.active .toggle-slider {
+            transform: translateX(24px);
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-cancel {
+            background: #374151;
+        }
+
+        .btn-cancel:hover {
+            background: #4b5563;
+        }
+
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .day-title {
+            font-size: 2rem;
+            color: #a5b4fc;
+        }
+
+        .event-section {
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            background: rgba(239, 68, 68, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .section-title.idea {
+            background: rgba(234, 179, 8, 0.8);
+        }
+
+        .section-title.documento {
+            background: rgba(59, 130, 246, 0.8);
+        }
+
+        .event-item {
+            background: rgba(55, 65, 81, 0.5);
+            border-left: 4px solid #ef4444;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .event-item.idea {
+            border-left-color: #eab308;
+        }
+
+        .event-item.documento {
+            border-left-color: #3b82f6;
+        }
+
+        .event-content {
+            flex: 1;
+        }
+
+        .event-time {
+            font-weight: 600;
+            color: #a5b4fc;
+        }
+
+        .event-title {
+            font-size: 1.1rem;
+            margin-top: 5px;
+        }
+
+        .event-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .star {
+            color: #fbbf24;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .star:hover {
+            transform: scale(1.2);
+        }
+
+        .star.empty {
+            color: #4b5563;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #10b981;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            z-index: 3000;
+            opacity: 0;
+            transition: all 0.3s ease-out;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: #ef4444;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #9ca3af;
+        }
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .item-card {
+            background: rgba(55, 65, 81, 0.5); 
+            border-left: 4px solid #6366f1; 
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .item-card:hover {
+            background: rgba(55, 65, 81, 0.7);
+            transform: translateX(5px);
+        }
+
+        .item-title {
+            font-size: 1.3rem;
+            color: #a5b4fc;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .share-buttons {
+            display: flex;
+            gap: 8px;
+            padding: 5px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+        }
+
+        .item-content {
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .item-meta {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin-top: 10px;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            height: auto;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-top: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .image-preview:hover {
+            opacity: 0.9;
+            border-color: #6366f1;
+        }
+
+        .pdf-preview {
+            background: rgba(239, 68, 68, 0.1);
+            border: 2px solid rgba(239, 68, 68, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .pdf-preview a {
+            color: #f87171;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .pdf-preview a:hover {
+            text-decoration: underline;
+        }
+
+        .password-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+            color: #fbbf24;
+            user-select: all;
+        }
+
+        .password-hidden {
+            letter-spacing: 5px;
+        }
+
+        .person-phone {
+            font-size: 1.3rem;
+            color: #a5b4fc;
+            font-weight: 600;
+            margin: 10px 0;
+        }
+
+        .ai-link-card {
+            background: rgba(59, 130, 246, 0.1);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .ai-link-card .item-title {
+            margin-bottom: 5px;
+        }
+
+        .ai-link {
+            color: #60a5fa;
+            font-size: 1.2rem;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .ai-link:hover {
+            color: #93c5fd;
+            text-decoration: underline;
+        }
+        
+        .map-card {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.2));
+            border-left-color: #22c55e;
+        }
+
+        .map-link {
+            color: #4ade80;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .map-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Indicador de APP instalada */
+        .app-badge {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .calendar-grid {
+                gap: 5px;
+            }
+
+            .calendar-day {
+                min-height: 80px;
+                padding: 8px 5px;
+            }
+
+            .day-number {
+                font-size: 1rem;
+            }
+
+            .event-badge {
+                font-size: 0.65rem;
+                padding: 2px 6px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            /* NUEVA NAVEGACIÓN MÓVIL - 2 FILAS */
+            .bottom-nav {
+                padding: 5px;
+            }
+
+            .nav-container {
+                grid-template-columns: repeat(5, 1fr);
+                grid-template-rows: repeat(2, 1fr);
+                gap: 3px;
+                max-height: 140px;
+            }
+
+            /* Ya NO escondemos nada - mostramos todos */
+            .nav-item {
+                padding: 5px;
+            }
+
+            .nav-icon {
+                font-size: 1.4rem;
+                margin-bottom: 2px;
+            }
+
+            .nav-label {
+                font-size: 0.65rem;
+            }
+
+            .day-title {
+                font-size: 1.5rem;
+            }
+
+            .item-title {
+                font-size: 1.1rem;
+            }
+
+            .btn-small {
+                padding: 8px 12px;
+                font-size: 0.9rem;
+            }
+
+            body {
+                padding-bottom: 150px;
+            }
+        }
+        
+        @media print {
+            body {
+                background: white;
+                color: black;
+                padding: 0;
+            }
+            header, .bottom-nav, .calendar-header, .btn, .toast, .modal, .app-badge {
+                display: none !important;
+            }
+            .container {
+                padding: 0;
+            }
+            .calendar-container {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                background: white;
+            }
+            h1, h2, h3, h4 {
+                color: black !important;
+                background: none !important;
+            }
+            .item-card {
+                background: #f3f4f6 !important;
+                color: black !important;
+                border-left-color: #3b82f6 !important;
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+                page-break-inside: avoid;
+                cursor: default;
+                transform: none;
+            }
+            .item-title {
+                color: #1f2937 !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Indicador de APP instalada -->
+    <div class="app-badge" id="appBadge" style="display: none;">
+        📱 Modo APP
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <div class="container">
+        <header>
+            <h1>📅 NAVAJA APP v6.3 🔊📋💬</h1>
+            <details style="margin-top: 10px; background: rgba(59, 130, 246, 0.1); padding: 10px; border-radius: 8px; cursor: pointer;">
+                <summary style="color: #60a5fa; font-weight: 600; cursor: pointer;">📱 ¿Cómo instalar la APP?</summary>
+                <div style="margin-top: 10px; color: #cbd5e1; font-size: 0.9rem; line-height: 1.6;">
+                    <p><strong>📱 Android (Chrome):</strong></p>
+                    <ol style="margin-left: 20px;">
+                        <li>Toca los 3 puntos (⋮) arriba a la derecha</li>
+                        <li>Selecciona "Añadir a pantalla de inicio"</li>
+                        <li>Dale un nombre y toca "Añadir"</li>
+                        <li>¡Ya tienes el icono en tu móvil!</li>
+                    </ol>
+                    <p style="margin-top: 10px;"><strong>🍎 iPhone/iPad (Safari):</strong></p>
+                    <ol style="margin-left: 20px;">
+                        <li>Toca el botón compartir (📤)</li>
+                        <li>Baja y toca "Añadir a pantalla de inicio"</li>
+                        <li>Dale un nombre y toca "Añadir"</li>
+                        <li>¡Listo! Ábrela desde tu pantalla</li>
+                    </ol>
+                    <p style="margin-top: 10px;"><strong>💻 Escritorio (Chrome/Edge):</strong></p>
+                    <ol style="margin-left: 20px;">
+                        <li>Mira arriba en la barra de direcciones</li>
+                        <li>Verás un icono ➕ o 💻</li>
+                        <li>Haz clic en "Instalar"</li>
+                        <li>¡Ya está en tu escritorio!</li>
+                    </ol>
+                    <p style="margin-top: 10px; background: rgba(16, 185, 129, 0.2); padding: 10px; border-radius: 5px; border-left: 3px solid #10b981;">
+                        ✅ <strong>Ventajas:</strong> Funciona sin internet, se abre como app independiente, icono personalizado
+                    </p>
+                </div>
+            </details>
+        </header>
+
+        <div id="calendarView" class="view active">
+            <div class="calendar-container">
+                <div class="calendar-header">
+                    <button class="btn btn-nav" onclick="previousMonth()">◀ Anterior</button>
+                    <h2 id="currentMonth"></h2>
+                    <button class="btn btn-nav" onclick="nextMonth()">Siguiente ▶</button>
+                    <button class="btn btn-info btn-small" onclick="openHolidayModal()">🎁 Añadir Festivo</button>
+                </div>
+
+                <div class="calendar-days-header">
+                    <div>Lun</div>
+                    <div>Mar</div>
+                    <div>Mié</div>
+                    <div>Jue</div>
+                    <div>Vie</div>
+                    <div>Sáb</div>
+                    <div>Dom</div>
+                </div>
+
+                <div class="calendar-grid" id="calendarGrid"></div>
+            </div>
+        </div>
+
+        <div id="dayView" class="view">
+            <div class="calendar-container">
+                <div class="day-header">
+                    <button class="btn btn-nav" onclick="backToCalendar()">◀ Volver</button>
+                    <h2 class="day-title" id="dayTitle"></h2>
+                    <button class="btn" onclick="openAddModal()">➕ Añadir</button>
+                </div>
+                <div id="dayEvents"></div>
+            </div>
+        </div>
+
+        <div id="ideasView" class="view">
+            <div class="calendar-container">
+                <div class="day-header">
+                    <h2 class="day-title">💡 Bloc de Ideas</h2>
+                    <div class="card-actions">
+                        <button class="btn btn-print btn-small" onclick="window.print()">🖨️ PDF</button>
+                        <button class="btn" onclick="openIdeaModal()">➕ Nueva Idea</button>
+                    </div>
+                </div>
+                <div id="ideasList"></div>
+            </div>
+        </div>
+
+        <div id="notesView" class="view">
+            <div class="calendar-container">
+                <div class="day-header">
+                    <h2 class="day-title">📝 Notas Rápidas</h2>
+                    <div class="card-actions">
+                        <button class="btn btn-print btn-small" onclick="window.print()">🖨️ PDF</button>
+                        <button class="btn" onclick="openNoteModal()">➕ Nueva Nota</button>
+                    </div>
+                </div>
+                <div id="notesList"></div>
+            </div>
+        </div>
+
+        <div id="healthView" class="view">
+            <div class="calendar-container">
+                <div class="day-header">
+                    <h2 class="day-title">💊 Gestión de Salud (Personal)</h2>
+                    <div class="card-actions">
+                        <button class="btn btn-print btn-small" onclick="window.print()">🖨️ PDF</button>
+                        <button class="btn" onclick="openHealthModal()">➕ Nuevo Registro</button>
+                    </div>
+                </div>
+                <div id="healthList"></div>
+            </div>
+        </div>
+
+        <div id="personArchiveView" class="view">
+            <div class="calendar-container">
+                <div class="day-header">
+                    <h2 class="day-title">👨‍👩‍👧 Personas & Archivo</h2>
+                    <div class="card-actions">
+                        <button class="btn btn-print btn-small" onclick="window.print()">🖨️ PDF</button>
+                        <button class="btn" onclick="openPersonModal()">➕ Nueva Persona</button>
+                    </div>
+                </div>
+                <div id="personList"></div>
+            </div>
+        </div>
+
+        <div id="aiView" class="view">
+            <div class="calendar-container">
+                <div class="day-header">
+                    <h2 class="day-title">🤖 Asistente IA</h2>
+                    <button class="btn" onclick="openAIModal()">➕ Nuevo Recorte</button>
+                </div>
+
+                <div class="ai-link-card">
+                    <div class="item-title">
+                        <p style="color: #9ca3af; margin-bottom: 10px;">Tu enlace IA:</p>
+                        <button class="btn btn-small" onclick="openAILinkModal()">⚙️ Configurar Enlace</button>
+                    </div>
+                    <a href="#" id="aiLinkDisplay" class="ai-link" target="_blank">No configurado</a>
+                </div>
+
+                <div id="aiList"></div>
+            </div>
+        </div>
+
+        <div id="mapsView" class="view">
+            <div class="calendar-container">
+                <div class="day-header">
+                    <h2 class="day-title">🗺️ Mapas y Rutas</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <a href="https://www.google.com/maps/search/?api=1&query=" target="_blank" class="btn btn-small btn-success">
+                            🔍 Buscar en Google Maps
+                        </a>
+                        <button class="btn" onclick="openMapModal()">➕ Nuevo Lugar</button>
+                    </div>
+                </div>
+                <div id="mapsList"></div>
+            </div>
+        </div>
+
+        <div id="passwordsView" class="view">
+            <div class="calendar-container">
+                <div class="day-header">
+                    <h2 class="day-title">🔐 Notas Seguras</h2>
+                    <button class="btn" onclick="openPasswordModal()">➕ Nueva Nota</button>
+                </div>
+                <div style="background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.3); padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+                    <p style="color: #fca5a5; font-weight: 600;">⚠️ Aviso de Seguridad:</p>
+                    <p style="color: #cbd5e1; margin-top: 5px;">Los datos se guardan en tu navegador sin cifrado. No almacenes información crítica aquí.</p>
+                </div>
+                <div id="passwordsList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-container">
+            <div class="nav-item active" onclick="switchView('calendar', event)">
+                <div class="nav-icon">📅</div>
+                <div class="nav-label">Agenda</div>
+            </div>
+            <div class="nav-item" onclick="switchView('notes', event)">
+                <div class="nav-icon">📝</div>
+                <div class="nav-label">Notas</div>
+            </div>
+            <div class="nav-item" onclick="switchView('health', event)">
+                <div class="nav-icon">💊</div>
+                <div class="nav-label">Salud</div>
+            </div>
+            <div class="nav-item" onclick="switchView('personArchive', event)">
+                <div class="nav-icon">👨‍👩‍👧</div>
+                <div class="nav-label">Personas</div>
+            </div>
+            <div class="nav-item" onclick="switchView('ideas', event)">
+                <div class="nav-icon">💡</div>
+                <div class="nav-label">Ideas</div>
+            </div>
+            <div class="nav-item" onclick="switchView('ai', event)">
+                <div class="nav-icon">🤖</div>
+                <div class="nav-label">IA</div>
+            </div>
+            <div class="nav-item" onclick="switchView('maps', event)">
+                <div class="nav-icon">🗺️</div>
+                <div class="nav-label">Mapas</div>
+            </div>
+            <div class="nav-item" onclick="switchView('passwords', event)">
+                <div class="nav-icon">🔐</div>
+                <div class="nav-label">Claves</div>
+            </div>
+            <div class="nav-item" onclick="window.open('https://keep.google.com', '_blank')">
+                <div class="nav-icon">📌</div>
+                <div class="nav-label">Keep</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TODOS LOS MODALES -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="eventModalTitle">Añadir Anotación</h3>
+                <button class="close-btn" onclick="closeModal('addModal')">×</button>
+            </div>
+            <form id="eventForm" onsubmit="saveEvent(event)">
+                <input type="hidden" id="eventId">
+                <div class="form-group">
+                    <label for="eventTitle">Título *</label>
+                    <input type="text" id="eventTitle" required placeholder="Ej: Reunión con el equipo">
+                </div>
+                <div class="form-group">
+                    <label for="eventTime">Hora (opcional)</label>
+                    <input type="time" id="eventTime">
+                </div>
+                <div class="form-group">
+                    <label for="eventType">Tipo</label>
+                    <select id="eventType">
+                        <option value="cita">🗓️ Cita</option>
+                        <option value="idea">💡 Idea</option>
+                        <option value="documento">📄 Documento</option>
+                    </select>
+                </div>
+                <div class="toggle-container">
+                    <label>⭐ Marcar como importante</label>
+                    <div class="toggle" id="importantToggle" onclick="toggleImportant()">
+                        <div class="toggle-slider"></div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('addModal')">Cancelar</button>
+                    <button type="submit" class="btn">💾 Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="ideaModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="ideaModalTitle">💡 Nueva Idea</h3>
+                <button class="close-btn" onclick="closeModal('ideaModal')">×</button>
+            </div>
+            <form id="ideaForm" onsubmit="saveIdea(event)">
+                <input type="hidden" id="ideaId">
+                <div class="form-group">
+                    <label for="ideaTitle">Título *</label>
+                    <input type="text" id="ideaTitle" required placeholder="Ej: Nueva funcionalidad">
+                </div>
+                <div class="form-group">
+                    <label for="ideaColor">Color de Clasificación</label>
+                    <input type="color" id="ideaColor" value="#f59e0b">
+                </div>
+                <div class="form-group">
+                    <label for="ideaContent">Descripción *</label>
+                    <textarea id="ideaContent" required placeholder="Describe tu idea..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="ideaFile">📎 Adjuntar archivo</label>
+                    <input type="file" id="ideaFile" accept="image/*,.pdf" onchange="previewFile('ideaFile', 'ideaFilePreview')">
+                    <div id="ideaFilePreview" class="file-preview"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('ideaModal')">Cancelar</button>
+                    <button type="submit" class="btn">💾 Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="noteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="noteModalTitle">📝 Nueva Nota</h3>
+                <button class="close-btn" onclick="closeModal('noteModal')">×</button>
+            </div>
+            <form id="noteForm" onsubmit="saveNote(event)">
+                <input type="hidden" id="noteId">
+                <div class="form-group">
+                    <label for="noteTitle">Título *</label>
+                    <input type="text" id="noteTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="noteColor">Color</label>
+                    <input type="color" id="noteColor" value="#0ea5e9">
+                </div>
+                <div class="form-group">
+                    <label for="noteContent">Contenido *</label>
+                    <textarea id="noteContent" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="noteFile">📎 Adjuntar archivo</label>
+                    <input type="file" id="noteFile" accept="image/*,.pdf" onchange="previewFile('noteFile', 'noteFilePreview')">
+                    <div id="noteFilePreview" class="file-preview"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('noteModal')">Cancelar</button>
+                    <button type="submit" class="btn">💾 Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="healthModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="healthModalTitle">💊 Registro de Salud</h3>
+                <button class="close-btn" onclick="closeModal('healthModal')">×</button>
+            </div>
+            <form id="healthForm" onsubmit="saveHealth(event)">
+                <input type="hidden" id="healthId">
+                <div class="form-group">
+                    <label for="healthType">Tipo *</label>
+                    <select id="healthType" required>
+                        <option value="medicamento">💊 Medicamento</option>
+                        <option value="cita">🩺 Cita</option>
+                        <option value="sintoma">🤒 Síntoma</option>
+                        <option value="analisis">📊 Análisis</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="healthTitle">Nombre *</label>
+                    <input type="text" id="healthTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="healthDate">Fecha</label>
+                    <input type="date" id="healthDate">
+                </div>
+                <div class="form-group">
+                    <label for="healthColor">Color</label>
+                    <input type="color" id="healthColor" value="#9575cd">
+                </div>
+                <div class="form-group">
+                    <label for="healthNotes">Notas</label>
+                    <textarea id="healthNotes"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="healthFile">📎 Adjuntar informe</label>
+                    <input type="file" id="healthFile" accept="image/*,.pdf" onchange="previewFile('healthFile', 'healthFilePreview')">
+                    <div id="healthFilePreview" class="file-preview"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('healthModal')">Cancelar</button>
+                    <button type="submit" class="btn">💾 Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="personModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="personModalTitle">👨‍👩‍👧 Nueva Persona</h3>
+                <button class="close-btn" onclick="closeModal('personModal')">×</button>
+            </div>
+            <form id="personForm" onsubmit="savePerson(event)">
+                <input type="hidden" id="personId">
+                <div class="form-group">
+                    <label for="personName">Nombre *</label>
+                    <input type="text" id="personName" required>
+                </div>
+                <div class="form-group">
+                    <label for="personPhone">Teléfono *</label>
+                    <input type="tel" id="personPhone" required>
+                </div>
+                <div class="form-group">
+                    <label for="personRelation">Relación</label>
+                    <input type="text" id="personRelation">
+                </div>
+                <div class="form-group">
+                    <label for="personColor">Color</label>
+                    <input type="color" id="personColor" value="#ec4899">
+                </div>
+                <div class="form-group">
+                    <label for="personHealthNotes">Historial Salud</label>
+                    <textarea id="personHealthNotes"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="personFile">📎 Adjuntar informe</label>
+                    <input type="file" id="personFile" accept="image/*,.pdf" onchange="previewFile('personFile', 'personFilePreview')">
+                    <div id="personFilePreview" class="file-preview"></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('personModal')">Cancelar</button>
+                    <button type="submit" class="btn">💾 Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="passwordModalTitle">🔐 Nota Segura</h3>
+                <button class="close-btn" onclick="closeModal('passwordModal')">×</button>
+            </div>
+            <form id="passwordForm" onsubmit="savePassword(event)">
+                <input type="hidden" id="passwordId">
+                <div class="form-group">
+                    <label for="passwordName">Nombre *</label>
+                    <input type="text" id="passwordName" required>
+                </div>
+                <div class="form-group">
+                    <label for="passwordValue">Contraseña/PIN *</label>
+                    <input type="text" id="passwordValue" required>
+                </div>
+                <div class="form-group">
+                    <label for="passwordColor">Color</label>
+                    <input type="color" id="passwordColor" value="#6366f1">
+                </div>
+                <div class="form-group">
+                    <label for="passwordNotes">Notas</label>
+                    <textarea id="passwordNotes"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('passwordModal')">Cancelar</button>
+                    <button type="submit" class="btn">💾 Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="holidayModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🎁 Festivo</h3>
+                <button class="close-btn" onclick="closeModal('holidayModal')">×</button>
+            </div>
+            <form id="holidayForm" onsubmit="saveHoliday(event)">
+                <div class="form-group">
+                    <label for="holidayDate">Fecha *</label>
+                    <input type="date" id="holidayDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="holidayName">Nombre *</label>
+                    <input type="text" id="holidayName" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('holidayModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">💾 Marcar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="aiModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🤖 Recorte IA</h3>
+                <button class="close-btn" onclick="closeModal('aiModal')">×</button>
+            </div>
+            <form id="aiForm" onsubmit="saveAINote(event)">
+                <input type="hidden" id="aiNoteId">
+                <div class="form-group">
+                    <label for="aiNoteTitle">Título *</label>
+                    <input type="text" id="aiNoteTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="aiNoteContent">Contenido *</label>
+                    <textarea id="aiNoteContent" required style="min-height: 150px;"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('aiModal')">Cancelar</button>
+                    <button type="submit" class="btn">💾 Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="aiLinkModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>⚙️ Enlace IA</h3>
+                <button class="close-btn" onclick="closeModal('aiLinkModal')">×</button>
+            </div>
+            <form id="aiLinkForm" onsubmit="saveAILink(event)">
+                <div class="form-group">
+                    <label for="aiLinkInput">URL *</label>
+                    <input type="url" id="aiLinkInput" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('aiLinkModal')">Cancelar</button>
+                    <button type="submit" class="btn">💾 Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="mapModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="mapModalTitle">🗺️ Lugar</h3>
+                <button class="close-btn" onclick="closeModal('mapModal')">×</button>
+            </div>
+            <form id="mapForm" onsubmit="saveMap(event)">
+                <input type="hidden" id="mapId">
+                <div class="form-group">
+                    <label for="mapTitle">Nombre *</label>
+                    <input type="text" id="mapTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="mapUrl">URL Maps *</label>
+                    <input type="url" id="mapUrl" required>
+                </div>
+                <div class="form-group">
+                    <label for="mapNotes">Notas</label>
+                    <textarea id="mapNotes"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeModal('mapModal')">Cancelar</button>
+                    <button type="submit" class="btn">💾 Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ====== REGISTRO DEL SERVICE WORKER (PWA) ======
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('✅ Service Worker registrado:', registration);
+                    })
+                    .catch(error => {
+                        console.log('❌ Error Service Worker:', error);
+                    });
+            });
+        }
+
+        // Detectar si se está ejecutando como PWA instalada
+        window.addEventListener('DOMContentLoaded', () => {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches 
+                               || window.navigator.standalone 
+                               || document.referrer.includes('android-app://');
+            
+            if (isStandalone) {
+                document.getElementById('appBadge').style.display = 'block';
+                console.log('🚀 Ejecutando como APP instalada');
+            }
+        });
+
+        // ====== VARIABLES GLOBALES ======
+        let currentDate = new Date();
+        let selectedDate = new Date();
+        let events = {};
+        let ideas = [];
+        let notes = [];
+        let health = [];
+        let personArchive = [];
+        let aiNotes = [];
+        let aiLink = '';
+        let maps = [];
+        let passwords = [];
+        let holidays = {};
+        
+        let isImportant = false;
+        let currentView = 'calendar';
+        let speechSynthesis = window.speechSynthesis;
+        let currentSpeech = null;
+        
+        const DEFAULT_COLORS = ['#6366f1', '#10b981', '#ef4444', '#f59e0b', '#0ea5e9', '#d946ef', '#f472b6', '#a3a3a3']; 
+
+        const MADRID_HOLIDAYS_2025 = {
+            '2025-01-01': 'Año Nuevo',
+            '2025-01-06': 'Reyes Magos',
+            '2025-04-17': 'Jueves Santo',
+            '2025-04-18': 'Viernes Santo',
+            '2025-05-01': 'Día del Trabajador',
+            '2025-05-02': 'Día de la Comunidad de Madrid',
+            '2025-05-15': 'San Isidro',
+            '2025-08-15': 'Asunción de la Virgen',
+            '2025-10-12': 'Fiesta Nacional de España',
+            '2025-11-01': 'Todos los Santos',
+            '2025-12-06': 'Día de la Constitución',
+            '2025-12-08': 'Inmaculada Concepción',
+            '2025-12-25': 'Navidad'
+        };
+
+        // ====== SISTEMA DE VOZ (TTS) ======
+        function speakText(text, buttonId) {
+            if (currentSpeech) {
+                speechSynthesis.cancel();
+                if (buttonId) {
+                    document.getElementById(buttonId).classList.remove('speaking');
+                }
+                currentSpeech = null;
+                return;
+            }
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-ES';
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+
+            if (buttonId) {
+                document.getElementById(buttonId).classList.add('speaking');
+            }
+
+            utterance.onend = () => {
+                if (buttonId) {
+                    document.getElementById(buttonId).classList.remove('speaking');
+                }
+                currentSpeech = null;
+            };
+
+            currentSpeech = utterance;
+            speechSynthesis.speak(utterance);
+        }
+
+        function stopSpeaking() {
+            if (speechSynthesis.speaking) {
+                speechSynthesis.cancel();
+            }
+        }
+
+        // ====== ALARMA SONORA ======
+        function playNotificationSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // ====== UTILIDADES ======
+        function getRandomColor() {
+            return DEFAULT_COLORS[Math.floor(Math.random() * DEFAULT_COLORS.length)];
+        }
+
+        function hexToRgba(hex, alpha) {
+            const h = hex.startsWith('#') ? hex.slice(1) : hex;
+            if (h.length !== 6) return `rgba(99, 102, 241, ${alpha})`;
+            const bigint = parseInt(h, 16);
+            const r = (bigint >> 16) & 255;
+            const g = (bigint >> 8) & 255;
+            const b = bigint & 255;
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        function formatDateKey(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // ====== ARCHIVOS ======
+        function previewFile(inputId, previewId) {
+            const input = document.getElementById(inputId);
+            const preview = document.getElementById(previewId);
+            const file = input.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    if (file.type.startsWith('image/')) {
+                        preview.innerHTML = `<img src="${dataUrl}" style="max-width: 100%; max-height: 200px; border-radius: 8px;"><div class="file-preview-name">${file.name}</div>`;
+                    } else if (file.type === 'application/pdf') {
+                        preview.innerHTML = `<div style="background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.3); padding: 15px; border-radius: 8px;"><div style="font-size: 3rem;">📄</div><div class="file-preview-name">${file.name}</div></div>`;
+                    }
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.innerHTML = '';
+            }
+        }
+
+        async function getFileData(inputId) {
+            const input = document.getElementById(inputId);
+            const file = input.files[0];
+            if (!file) return null;
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve({ name: file.name, type: file.type, data: e.target.result });
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function renderFileAttachment(fileData) {
+            if (!fileData) return '';
+            if (fileData.type.startsWith('image/')) {
+                return `<img src="${fileData.data}" alt="${fileData.name}" class="image-preview" onclick="window.open('${fileData.data}', '_blank')">`;
+            } else if (fileData.type === 'application/pdf') {
+                return `<div class="pdf-preview"><div style="font-size: 3rem; margin-bottom: 10px;">📄</div><a href="${fileData.data}" target="_blank" download="${fileData.name}">📥 Descargar ${fileData.name}</a></div>`;
+            }
+            return '';
+        }
+
+        // ====== COMPARTIR Y COPIAR ======
+        function copyItemById(type, id) {
+            let item = null;
+            let text = '';
+            
+            // Buscar el item
+            if (type === 'note') item = notes.find(i => i.id === id);
+            else if (type === 'idea') item = ideas.find(i => i.id === id);
+            else if (type === 'health') item = health.find(i => i.id === id);
+            else if (type === 'person') item = personArchive.find(i => i.id === id);
+            
+            if (!item) {
+                showToast('❌ Error: Item no encontrado', true);
+                return;
+            }
+            
+            // Formatear texto según tipo
+            if (type === 'note') {
+                text = `NOTA: ${item.title}\n\n${item.content}`;
+            } else if (type === 'idea') {
+                text = `IDEA: ${item.title}\n\n${item.content}`;
+            } else if (type === 'health') {
+                const tipos = {'medicamento': 'MEDICAMENTO', 'cita': 'CITA', 'sintoma': 'SINTOMA', 'analisis': 'ANALISIS'};
+                text = `${tipos[item.type] || 'SALUD'}: ${item.title}\n`;
+                text += `Fecha: ${item.date || 'Sin fecha'}\n`;
+                if (item.notes) text += `\n${item.notes}`;
+            } else if (type === 'person') {
+                text = `CONTACTO: ${item.name}\n`;
+                if (item.relation) text += `Relacion: ${item.relation}\n`;
+                text += `Telefono: ${item.phone}\n`;
+                if (item.healthNotes) text += `\nSalud: ${item.healthNotes}`;
+            }
+            
+            // Copiar
+            copyToClipboard(text);
+        }
+        
+        function copyToClipboard(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('✅ ¡COPIADO! Pega con Ctrl+V');
+                    playNotificationSound();
+                }).catch(err => {
+                    console.error('Error:', err);
+                    fallbackCopyTextToClipboard(text);
+                });
+            } else {
+                fallbackCopyTextToClipboard(text);
+            }
+        }
+
+        function fallbackCopyTextToClipboard(text) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.width = "2em";
+            textArea.style.height = "2em";
+            textArea.style.padding = "0";
+            textArea.style.border = "none";
+            textArea.style.outline = "none";
+            textArea.style.boxShadow = "none";
+            textArea.style.background = "transparent";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('✅ ¡COPIADO! Pégalo donde quieras');
+                    playNotificationSound();
+                } else {
+                    showToast('❌ No se pudo copiar', true);
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                showToast('❌ Tu navegador bloqueó copiar', true);
+            }
+            
+            document.body.removeChild(textArea);
+        }
+
+        function shareToWhatsApp(text) {
+            const encodedText = encodeURIComponent(text);
+            const whatsappUrl = `https://wa.me/?text=${encodedText}`;
+            window.open(whatsappUrl, '_blank');
+            playNotificationSound();
+            setTimeout(() => {
+                showToast('💡 En escritorio se abre WhatsApp Web');
+            }, 1000);
+        }
+
+        function shareToTelegram(text) {
+            const encodedText = encodeURIComponent(text);
+            const telegramUrl = `https://t.me/share/url?url=&text=${encodedText}`;
+            window.open(telegramUrl, '_blank');
+            playNotificationSound();
+            setTimeout(() => {
+                showToast('💡 En escritorio se abre Telegram Web');
+            }, 1000);
+        }
+
+        function formatItemForSharing(item, type) {
+            let text = '';
+            if (type === 'note') {
+                text = `📝 *${item.title}*\n\n${item.content}`;
+            } else if (type === 'idea') {
+                text = `💡 *${item.title}*\n\n${item.content}`;
+            } else if (type === 'health') {
+                const typeEmojis = {'medicamento': '💊', 'cita': '🩺', 'sintoma': '🤒', 'analisis': '📊'};
+                text = `${typeEmojis[item.type] || '📋'} *${item.title}*\n📅 ${item.date ? new Date(item.date).toLocaleDateString('es-ES') : 'Sin fecha'}\n`;
+                if (item.notes) text += `\n${item.notes}`;
+            } else if (type === 'person') {
+                text = `👤 *${item.name}*\n`;
+                if (item.relation) text += `Relación: ${item.relation}\n`;
+                text += `📞 ${item.phone}\n`;
+                if (item.healthNotes) text += `\n💊 Salud: ${item.healthNotes}`;
+            }
+            return text;
+        }
+
+        // ====== ALMACENAMIENTO ======
+        function loadData() {
+            try {
+                events = JSON.parse(localStorage.getItem('agendaEvents')) || {};
+                ideas = JSON.parse(localStorage.getItem('agendaIdeas')) || [];
+                notes = JSON.parse(localStorage.getItem('agendaNotes')) || [];
+                health = JSON.parse(localStorage.getItem('agendaHealth')) || [];
+                personArchive = JSON.parse(localStorage.getItem('agendaPersonArchive')) || [];
+                aiNotes = JSON.parse(localStorage.getItem('agendaAI')) || [];
+                aiLink = localStorage.getItem('agendaAILink') || 'https://gemini.google.com';
+                maps = JSON.parse(localStorage.getItem('agendaMaps')) || [];
+                passwords = JSON.parse(localStorage.getItem('agendaPasswords')) || [];
+                const savedHolidays = localStorage.getItem('agendaHolidays');
+                holidays = savedHolidays ? JSON.parse(savedHolidays) : {...MADRID_HOLIDAYS_2025};
+                if (!savedHolidays) localStorage.setItem('agendaHolidays', JSON.stringify(holidays));
+                updateAILinkDisplay();
+            } catch (e) {
+                console.error('Error al cargar:', e);
+            }
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem('agendaEvents', JSON.stringify(events));
+                localStorage.setItem('agendaIdeas', JSON.stringify(ideas));
+                localStorage.setItem('agendaNotes', JSON.stringify(notes));
+                localStorage.setItem('agendaHealth', JSON.stringify(health));
+                localStorage.setItem('agendaPersonArchive', JSON.stringify(personArchive));
+                localStorage.setItem('agendaAI', JSON.stringify(aiNotes));
+                localStorage.setItem('agendaAILink', aiLink);
+                localStorage.setItem('agendaMaps', JSON.stringify(maps));
+                localStorage.setItem('agendaPasswords', JSON.stringify(passwords));
+                localStorage.setItem('agendaHolidays', JSON.stringify(holidays));
+                return true;
+            } catch (e) {
+                console.error('Error al guardar:', e);
+                if (e.name === 'QuotaExceededError') alert('⚠️ Almacenamiento lleno');
+                return false;
+            }
+        }
+
+        // ====== UI ======
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show' + (isError ? ' error' : '');
+            playNotificationSound();
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            stopSpeaking();
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function toggleImportant() {
+            isImportant = !isImportant;
+            document.getElementById('importantToggle').classList.toggle('active');
+        }
+
+        function switchView(view, event) {
+            currentView = view;
+            stopSpeaking();
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            const viewMap = {
+                'calendar': 'calendarView', 'health': 'healthView', 'personArchive': 'personArchiveView',
+                'ideas': 'ideasView', 'notes': 'notesView', 'ai': 'aiView', 'maps': 'mapsView', 'passwords': 'passwordsView'
+            };
+            document.getElementById(viewMap[view]).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            if (event?.currentTarget) event.currentTarget.classList.add('active');
+            
+            if (view === 'calendar') renderCalendar();
+            else if (view === 'ideas') renderIdeas();
+            else if (view === 'notes') renderNotes();
+            else if (view === 'health') renderHealth();
+            else if (view === 'personArchive') renderPersonArchive();
+            else if (view === 'ai') renderAI();
+            else if (view === 'maps') renderMaps();
+            else if (view === 'passwords') renderPasswords();
+        }
+
+        // ====== CALENDARIO ======
+        function openHolidayModal() {
+            document.getElementById('holidayForm').reset();
+            document.getElementById('holidayDate').valueAsDate = new Date(selectedDate);
+            openModal('holidayModal');
+        }
+
+        function saveHoliday(e) {
+            e.preventDefault();
+            const date = document.getElementById('holidayDate').value;
+            const name = document.getElementById('holidayName').value.trim();
+            if (holidays[date] && !confirm(`Sobrescribir ${holidays[date]}?`)) return;
+            holidays[date] = name;
+            if (saveData()) {
+                showToast(`🎁 Festivo: ${name}`);
+                closeModal('holidayModal');
+                renderCalendar();
+            }
+        }
+
+        function renderCalendar() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+            document.getElementById('currentMonth').textContent = `${monthNames[month]} ${year}`;
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const startOffset = firstDay === 0 ? 6 : firstDay - 1;
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+            for (let i = 0; i < startOffset; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'calendar-day empty';
+                grid.appendChild(emptyDay);
+            }
+            const today = formatDateKey(new Date());
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dateKey = formatDateKey(date);
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                const dayOfWeek = date.getDay();
+                if (holidays[dateKey]) {
+                    dayElement.classList.add('holiday');
+                } else if (dayOfWeek === 6) {
+                    dayElement.classList.add('weekend', 'weekend-saturday');
+                } else if (dayOfWeek === 0) {
+                    dayElement.classList.add('weekend', 'weekend-sunday');
+                }
+                if (dateKey === today) dayElement.classList.add('today');
+                let innerHTML = `<div class="day-number">${day}</div>`;
+                if (holidays[dateKey]) {
+                    innerHTML += `<div class="event-badge cita" style="background: rgba(239,68,68,0.9); color: white;">🎁 ${holidays[dateKey].split(' ').slice(0,2).join(' ')}</div>`;
+                }
+                const dayEvents = events[dateKey] || [];
+                const eventCounts = {};
+                dayEvents.forEach(event => eventCounts[event.type] = (eventCounts[event.type] || 0) + 1);
+                Object.keys(eventCounts).forEach(type => {
+                    const typeEmoji = type === 'cita' ? '🗓️' : type === 'idea' ? '💡' : '📄';
+                    innerHTML += `<div class="event-badge ${type}">${typeEmoji} ${eventCounts[type]}</div>`;
+                });
+                dayElement.innerHTML = innerHTML;
+                dayElement.onclick = () => showDayView(date);
+                grid.appendChild(dayElement);
+            }
+        }
+
+        function previousMonth() {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        function showDayView(date) {
+            selectedDate = new Date(date);
+            document.getElementById('calendarView').classList.remove('active');
+            document.getElementById('dayView').classList.add('active');
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('dayTitle').textContent = selectedDate.toLocaleDateString('es-ES', options);
+            const dateKey = formatDateKey(selectedDate);
+            const dayEvents = events[dateKey] || [];
+            const eventsContainer = document.getElementById('dayEvents');
+            if (dayEvents.length === 0) {
+                eventsContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><h3>No hay nada</h3></div>';
+                return;
+            }
+            const citasEvents = dayEvents.filter(e => e.type === 'cita');
+            const ideasEvents = dayEvents.filter(e => e.type === 'idea');
+            const documentosEvents = dayEvents.filter(e => e.type === 'documento');
+            let html = '';
+            if (citasEvents.length > 0) {
+                html += '<div class="event-section"><div class="section-title">🗓️ Citas</div>';
+                citasEvents.forEach(event => {
+                    html += `<div class="event-item cita"><div class="event-content">${event.time ? `<div class="event-time">⏰ ${event.time}</div>` : ''}<div class="event-title">${event.title}</div></div><div class="event-actions"><span class="star ${event.important ? '' : 'empty'}" onclick="toggleEventImportant('${dateKey}', '${event.id}')">${event.important ? '⭐' : '☆'}</span><button class="btn btn-small btn-danger" onclick="deleteEvent('${dateKey}', '${event.id}')">🗑️</button></div></div>`;
+                });
+                html += '</div>';
+            }
+            if (ideasEvents.length > 0) {
+                html += '<div class="event-section"><div class="section-title idea">💡 Ideas</div>';
+                ideasEvents.forEach(event => {
+                    html += `<div class="event-item idea"><div class="event-content">${event.time ? `<div class="event-time">⏰ ${event.time}</div>` : ''}<div class="event-title">${event.title}</div></div><div class="event-actions"><span class="star ${event.important ? '' : 'empty'}" onclick="toggleEventImportant('${dateKey}', '${event.id}')">${event.important ? '⭐' : '☆'}</span><button class="btn btn-small btn-danger" onclick="deleteEvent('${dateKey}', '${event.id}')">🗑️</button></div></div>`;
+                });
+                html += '</div>';
+            }
+            if (documentosEvents.length > 0) {
+                html += '<div class="event-section"><div class="section-title documento">📄 Documentos</div>';
+                documentosEvents.forEach(event => {
+                    html += `<div class="event-item documento"><div class="event-content">${event.time ? `<div class="event-time">⏰ ${event.time}</div>` : ''}<div class="event-title">${event.title}</div></div><div class="event-actions"><span class="star ${event.important ? '' : 'empty'}" onclick="toggleEventImportant('${dateKey}', '${event.id}')">${event.important ? '⭐' : '☆'}</span><button class="btn btn-small btn-danger" onclick="deleteEvent('${dateKey}', '${event.id}')">🗑️</button></div></div>`;
+                });
+                html += '</div>';
+            }
+            eventsContainer.innerHTML = html;
+        }
+
+        function backToCalendar() {
+            document.getElementById('dayView').classList.remove('active');
+            document.getElementById('calendarView').classList.add('active');
+            renderCalendar();
+        }
+
+        function openAddModal() {
+            document.getElementById('eventForm').reset();
+            document.getElementById('eventId').value = '';
+            isImportant = false;
+            document.getElementById('importantToggle').classList.remove('active');
+            openModal('addModal');
+        }
+
+        function saveEvent(e) {
+            e.preventDefault();
+            const id = document.getElementById('eventId').value || Date.now().toString();
+            const title = document.getElementById('eventTitle').value.trim();
+            const time = document.getElementById('eventTime').value;
+            const type = document.getElementById('eventType').value;
+            if (!title) return showToast('❌ Falta título', true);
+            const dateKey = formatDateKey(selectedDate);
+            if (!events[dateKey]) events[dateKey] = [];
+            const newEvent = { id, title, time, type, important: isImportant, date: dateKey };
+            const existingIndex = events[dateKey].findIndex(e => e.id === id);
+            if (existingIndex !== -1) events[dateKey][existingIndex] = newEvent;
+            else events[dateKey].push(newEvent);
+            if (saveData()) {
+                showToast('✅ Evento guardado');
+                closeModal('addModal');
+                showDayView(selectedDate);
+                renderCalendar();
+            }
+        }
+
+        function toggleEventImportant(dateKey, eventId) {
+            const event = events[dateKey]?.find(e => e.id === eventId);
+            if (event) {
+                event.important = !event.important;
+                if (saveData()) showDayView(selectedDate);
+            }
+        }
+
+        function deleteEvent(dateKey, eventId) {
+            if (!confirm('¿Eliminar?')) return;
+            events[dateKey] = events[dateKey].filter(e => e.id !== eventId);
+            if (events[dateKey].length === 0) delete events[dateKey];
+            if (saveData()) {
+                showToast('🗑️ Eliminado');
+                showDayView(selectedDate);
+                renderCalendar();
+            }
+        }
+
+        // ====== IDEAS ======
+        function openIdeaModal(id = null) {
+            document.getElementById('ideaForm').reset();
+            document.getElementById('ideaFilePreview').innerHTML = '';
+            document.getElementById('ideaId').value = id || '';
+            if (id) {
+                const idea = ideas.find(i => i.id === id);
+                if (idea) {
+                    document.getElementById('ideaTitle').value = idea.title;
+                    document.getElementById('ideaColor').value = idea.color;
+                    document.getElementById('ideaContent').value = idea.content;
+                    if (idea.file) document.getElementById('ideaFilePreview').innerHTML = renderFileAttachment(idea.file);
+                }
+            } else {
+                document.getElementById('ideaColor').value = getRandomColor();
+            }
+            openModal('ideaModal');
+        }
+
+        async function saveIdea(e) {
+            e.preventDefault();
+            const id = document.getElementById('ideaId').value;
+            const title = document.getElementById('ideaTitle').value.trim();
+            const content = document.getElementById('ideaContent').value.trim();
+            const color = document.getElementById('ideaColor').value;
+            const fileData = await getFileData('ideaFile');
+            if (!title || !content) return showToast('❌ Faltan datos', true);
+            const newIdea = { id: id || Date.now().toString(), title, content, color, file: fileData, date: new Date().toISOString() };
+            if (id) {
+                const index = ideas.findIndex(i => i.id === id);
+                if (index !== -1) {
+                    if (!fileData && ideas[index].file) newIdea.file = ideas[index].file;
+                    ideas[index] = newIdea;
+                }
+            } else {
+                ideas.unshift(newIdea);
+            }
+            if (saveData()) {
+                showToast('✅ Idea guardada');
+                closeModal('ideaModal');
+                renderIdeas();
+            }
+        }
+
+        function renderIdeas() {
+            const container = document.getElementById('ideasList');
+            if (ideas.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💡</div><h3>Sin ideas</h3></div>';
+                return;
+            }
+            let html = '';
+            ideas.forEach((idea, idx) => {
+                const date = new Date(idea.date);
+                const baseColor = idea.color || getRandomColor();
+                const bgColorRgba = hexToRgba(baseColor, 0.2);
+                const shareText = formatItemForSharing(idea, 'idea');
+                const btnId = `voice-idea-${idx}`;
+                html += `
+                    <div class="item-card" style="border-left-color: ${baseColor}; background: ${bgColorRgba};">
+                        <div class="item-title">
+                            <span>💡 ${idea.title}</span>
+                            <div class="card-actions">
+                                <div class="share-buttons">
+                                    <button class="btn btn-small btn-voice" id="${btnId}" onclick="speakText('${idea.title}. ${idea.content.replace(/'/g, "\\'")}', '${btnId}'); event.stopPropagation();" title="Leer en voz alta">🔊</button>
+                                    <button class="btn btn-small btn-copy" onclick="copyItemById('idea', '${idea.id}'); event.stopPropagation();" title="Copiar">📋</button>
+                                    <button class="btn btn-small btn-whatsapp" onclick="shareToWhatsApp('${shareText.replace(/'/g, "\\'")}'); event.stopPropagation();" title="WhatsApp">💬</button>
+                                    <button class="btn btn-small btn-telegram" onclick="shareToTelegram('${shareText.replace(/'/g, "\\'")}'); event.stopPropagation();" title="Telegram">✈️</button>
+                                </div>
+                                <button class="btn btn-small btn-info" onclick="openIdeaModal('${idea.id}'); event.stopPropagation();">✍️</button>
+                                <button class="btn btn-small btn-danger" onclick="deleteItem('idea', '${idea.id}'); event.stopPropagation();">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="item-content">${idea.content}</div>
+                        ${idea.file ? renderFileAttachment(idea.file) : ''}
+                        <div class="item-meta">${date.toLocaleDateString('es-ES')}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // ====== NOTAS ======
+        function openNoteModal(id = null) {
+            document.getElementById('noteForm').reset();
+            document.getElementById('noteFilePreview').innerHTML = '';
+            document.getElementById('noteId').value = id || '';
+            if (id) {
+                const note = notes.find(i => i.id === id);
+                if (note) {
+                    document.getElementById('noteTitle').value = note.title;
+                    document.getElementById('noteColor').value = note.color;
+                    document.getElementById('noteContent').value = note.content;
+                    if (note.file) document.getElementById('noteFilePreview').innerHTML = renderFileAttachment(note.file);
+                }
+            } else {
+                document.getElementById('noteColor').value = getRandomColor();
+            }
+            openModal('noteModal');
+        }
+
+        async function saveNote(e) {
+            e.preventDefault();
+            const id = document.getElementById('noteId').value;
+            const title = document.getElementById('noteTitle').value.trim();
+            const content = document.getElementById('noteContent').value.trim();
+            const color = document.getElementById('noteColor').value;
+            const fileData = await getFileData('noteFile');
+            if (!title || !content) return showToast('❌ Faltan datos', true);
+            const newNote = { id: id || Date.now().toString(), title, content, color, file: fileData, date: new Date().toISOString() };
+            if (id) {
+                const index = notes.findIndex(i => i.id === id);
+                if (index !== -1) {
+                    if (!fileData && notes[index].file) newNote.file = notes[index].file;
+                    notes[index] = newNote;
+                }
+            } else {
+                notes.unshift(newNote);
+            }
+            if (saveData()) {
+                showToast('✅ Nota guardada');
+                closeModal('noteModal');
+                renderNotes();
+            }
+        }
+
+        function renderNotes() {
+            const container = document.getElementById('notesList');
+            if (notes.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📝</div><h3>Sin notas</h3></div>';
+                return;
+            }
+            let html = '';
+            notes.forEach((note, idx) => {
+                const date = new Date(note.date);
+                const baseColor = note.color || getRandomColor();
+                const bgColorRgba = hexToRgba(baseColor, 0.2);
+                const shareText = formatItemForSharing(note, 'note');
+                const btnId = `voice-note-${idx}`;
+                html += `
+                    <div class="item-card" style="border-left-color: ${baseColor}; background: ${bgColorRgba};">
+                        <div class="item-title">
+                            <span>📝 ${note.title}</span>
+                            <div class="card-actions">
+                                <div class="share-buttons">
+                                    <button class="btn btn-small btn-voice" id="${btnId}" onclick="speakText('${note.title}. ${note.content.replace(/'/g, "\\'")}', '${btnId}'); event.stopPropagation();" title="Leer">🔊</button>
+                                    <button class="btn btn-small btn-copy" onclick="copyItemById('note', '${note.id}'); event.stopPropagation();" title="Copiar">📋</button>
+                                    <button class="btn btn-small btn-whatsapp" onclick="shareToWhatsApp('${shareText.replace(/'/g, "\\'")}'); event.stopPropagation();" title="WhatsApp">💬</button>
+                                    <button class="btn btn-small btn-telegram" onclick="shareToTelegram('${shareText.replace(/'/g, "\\'")}'); event.stopPropagation();" title="Telegram">✈️</button>
+                                </div>
+                                <button class="btn btn-small btn-info" onclick="openNoteModal('${note.id}'); event.stopPropagation();">✍️</button>
+                                <button class="btn btn-small btn-danger" onclick="deleteItem('note', '${note.id}'); event.stopPropagation();">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="item-content">${note.content}</div>
+                        ${note.file ? renderFileAttachment(note.file) : ''}
+                        <div class="item-meta">${date.toLocaleDateString('es-ES')}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // ====== SALUD ======
+        function openHealthModal(id = null) {
+            document.getElementById('healthForm').reset();
+            document.getElementById('healthFilePreview').innerHTML = '';
+            document.getElementById('healthId').value = id || '';
+            if (id) {
+                const item = health.find(i => i.id === id);
+                if (item) {
+                    document.getElementById('healthType').value = item.type;
+                    document.getElementById('healthTitle').value = item.title;
+                    document.getElementById('healthDate').value = item.date;
+                    document.getElementById('healthColor').value = item.color;
+                    document.getElementById('healthNotes').value = item.notes;
+                    if (item.file) document.getElementById('healthFilePreview').innerHTML = renderFileAttachment(item.file);
+                }
+            } else {
+                document.getElementById('healthDate').valueAsDate = new Date();
+                document.getElementById('healthColor').value = getRandomColor();
+            }
+            openModal('healthModal');
+        }
+
+        async function saveHealth(e) {
+            e.preventDefault();
+            const id = document.getElementById('healthId').value;
+            const type = document.getElementById('healthType').value;
+            const title = document.getElementById('healthTitle').value.trim();
+            const notes = document.getElementById('healthNotes').value.trim();
+            const date = document.getElementById('healthDate').value;
+            const color = document.getElementById('healthColor').value;
+            const fileData = await getFileData('healthFile');
+            if (!title) return showToast('❌ Falta título', true);
+            const newHealth = { id: id || Date.now().toString(), type, title, notes, date, color, file: fileData, created: new Date().toISOString() };
+            if (id) {
+                const index = health.findIndex(i => i.id === id);
+                if (index !== -1) {
+                    if (!fileData && health[index].file) newHealth.file = health[index].file;
+                    health[index] = newHealth;
+                }
+            } else {
+                health.unshift(newHealth);
+            }
+            if (saveData()) {
+                showToast('✅ Salud guardada');
+                closeModal('healthModal');
+                renderHealth();
+            }
+        }
+
+        function renderHealth() {
+            const container = document.getElementById('healthList');
+            if (health.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💊</div><h3>Sin registros</h3></div>';
+                return;
+            }
+            const typeEmojis = {'medicamento': '💊', 'cita': '🩺', 'sintoma': '🤒', 'analisis': '📊'};
+            let html = '';
+            health.forEach((item, idx) => {
+                const itemDate = item.date ? new Date(item.date).toLocaleDateString('es-ES') : 'Sin fecha';
+                const baseColor = item.color || getRandomColor();
+                const bgColorRgba = hexToRgba(baseColor, 0.2);
+                const shareText = formatItemForSharing(item, 'health');
+                const btnId = `voice-health-${idx}`;
+                html += `
+                    <div class="item-card" style="border-left-color: ${baseColor}; background: ${bgColorRgba};">
+                        <div class="item-title">
+                            <span>${typeEmojis[item.type] || '📋'} ${item.title}</span>
+                            <div class="card-actions">
+                                <div class="share-buttons">
+                                    <button class="btn btn-small btn-voice" id="${btnId}" onclick="speakText('${item.title}. ${(item.notes || '').replace(/'/g, "\\'")}', '${btnId}'); event.stopPropagation();" title="Leer">🔊</button>
+                                    <button class="btn btn-small btn-copy" onclick="copyItemById('health', '${item.id}'); event.stopPropagation();" title="Copiar">📋</button>
+                                    <button class="btn btn-small btn-whatsapp" onclick="shareToWhatsApp('${shareText.replace(/'/g, "\\'")}'); event.stopPropagation();" title="WhatsApp">💬</button>
+                                    <button class="btn btn-small btn-telegram" onclick="shareToTelegram('${shareText.replace(/'/g, "\\'")}'); event.stopPropagation();" title="Telegram">✈️</button>
+                                </div>
+                                <button class="btn btn-small btn-info" onclick="openHealthModal('${item.id}'); event.stopPropagation();">✍️</button>
+                                <button class="btn btn-small btn-danger" onclick="deleteItem('health', '${item.id}'); event.stopPropagation();">🗑️</button>
+                            </div>
+                        </div>
+                        ${item.notes ? `<div class="item-content">${item.notes}</div>` : ''}
+                        ${item.file ? renderFileAttachment(item.file) : ''}
+                        <div class="item-meta">📅 ${itemDate}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // ====== PERSONAS ======
+        function openPersonModal(id = null) {
+            document.getElementById('personForm').reset();
+            document.getElementById('personFilePreview').innerHTML = '';
+            document.getElementById('personId').value = id || '';
+            if (id) {
+                const item = personArchive.find(i => i.id === id);
+                if (item) {
+                    document.getElementById('personName').value = item.name;
+                    document.getElementById('personPhone').value = item.phone;
+                    document.getElementById('personRelation').value = item.relation;
+                    document.getElementById('personColor').value = item.color;
+                    document.getElementById('personHealthNotes').value = item.healthNotes;
+                    if (item.file) document.getElementById('personFilePreview').innerHTML = renderFileAttachment(item.file);
+                }
+            } else {
+                document.getElementById('personColor').value = getRandomColor();
+            }
+            openModal('personModal');
+        }
+
+        async function savePerson(e) {
+            e.preventDefault();
+            const id = document.getElementById('personId').value;
+            const name = document.getElementById('personName').value.trim();
+            const phone = document.getElementById('personPhone').value.trim();
+            const relation = document.getElementById('personRelation').value.trim();
+            const color = document.getElementById('personColor').value;
+            const healthNotes = document.getElementById('personHealthNotes').value.trim();
+            const fileData = await getFileData('personFile');
+            if (!name || !phone) return showToast('❌ Faltan datos', true);
+            const newPerson = { id: id || Date.now().toString(), name, phone, relation, color, healthNotes, file: fileData, created: new Date().toISOString() };
+            if (id) {
+                const index = personArchive.findIndex(i => i.id === id);
+                if (index !== -1) {
+                    if (!fileData && personArchive[index].file) newPerson.file = personArchive[index].file;
+                    personArchive[index] = newPerson;
+                }
+            } else {
+                personArchive.unshift(newPerson);
+            }
+            if (saveData()) {
+                showToast('✅ Persona guardada');
+                closeModal('personModal');
+                renderPersonArchive();
+            }
+        }
+
+        function renderPersonArchive() {
+            const container = document.getElementById('personList');
+            if (personArchive.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👨‍👩‍👧</div><h3>Sin personas</h3></div>';
+                return;
+            }
+            let html = '';
+            personArchive.forEach((person, idx) => {
+                const baseColor = person.color || getRandomColor();
+                const bgColorRgba = hexToRgba(baseColor, 0.2);
+                const shareText = formatItemForSharing(person, 'person');
+                const btnId = `voice-person-${idx}`;
+                html += `
+                    <div class="item-card" style="border-left-color: ${baseColor}; background: ${bgColorRgba};">
+                        <div class="item-title">
+                            <span>${person.name} ${person.relation ? `(${person.relation})` : ''}</span>
+                            <div class="card-actions">
+                                <div class="share-buttons">
+                                    <button class="btn btn-small btn-voice" id="${btnId}" onclick="speakText('${person.name}. Teléfono ${person.phone}. ${(person.healthNotes || '').replace(/'/g, "\\'")}', '${btnId}'); event.stopPropagation();" title="Leer">🔊</button>
+                                    <button class="btn btn-small btn-copy" onclick="copyItemById('person', '${person.id}'); event.stopPropagation();" title="Copiar">📋</button>
+                                    <button class="btn btn-small btn-whatsapp" onclick="shareToWhatsApp('${shareText.replace(/'/g, "\\'")}'); event.stopPropagation();" title="WhatsApp">💬</button>
+                                    <button class="btn btn-small btn-telegram" onclick="shareToTelegram('${shareText.replace(/'/g, "\\'")}'); event.stopPropagation();" title="Telegram">✈️</button>
+                                </div>
+                                <button class="btn btn-small btn-info" onclick="openPersonModal('${person.id}'); event.stopPropagation();">✍️</button>
+                                <button class="btn btn-small btn-danger" onclick="deleteItem('person', '${person.id}'); event.stopPropagation();">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="person-phone">📞 <a href="tel:${person.phone}" style="color: inherit; text-decoration: none;">${person.phone}</a></div>
+                        ${person.healthNotes ? `<div class="item-content"><strong>Salud:</strong> ${person.healthNotes}</div>` : ''}
+                        ${person.file ? renderFileAttachment(person.file) : ''}
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // ====== CONTRASEÑAS ======
+        function openPasswordModal(id = null) {
+            document.getElementById('passwordForm').reset();
+            document.getElementById('passwordId').value = id || '';
+            if (id) {
+                const item = passwords.find(i => i.id === id);
+                if (item) {
+                    document.getElementById('passwordName').value = item.name;
+                    document.getElementById('passwordValue').value = item.value;
+                    document.getElementById('passwordColor').value = item.color;
+                    document.getElementById('passwordNotes').value = item.notes;
+                }
+            } else {
+                document.getElementById('passwordColor').value = getRandomColor();
+            }
+            openModal('passwordModal');
+        }
+
+        function savePassword(e) {
+            e.preventDefault();
+            const id = document.getElementById('passwordId').value;
+            const name = document.getElementById('passwordName').value.trim();
+            const value = document.getElementById('passwordValue').value.trim();
+            const notes = document.getElementById('passwordNotes').value.trim();
+            const color = document.getElementById('passwordColor').value;
+            if (!name || !value) return showToast('❌ Faltan datos', true);
+            const newPassword = { id: id || Date.now().toString(), name, value, notes, color, revealed: false, created: new Date().toISOString() };
+            if (id) {
+                const index = passwords.findIndex(i => i.id === id);
+                if (index !== -1) passwords[index] = newPassword;
+            } else {
+                passwords.unshift(newPassword);
+            }
+            if (saveData()) {
+                showToast('✅ Clave guardada');
+                closeModal('passwordModal');
+                renderPasswords();
+            }
+        }
+
+        function togglePasswordReveal(id) {
+            const pwd = passwords.find(p => p.id === id);
+            if (pwd) {
+                pwd.revealed = !pwd.revealed;
+                saveData();
+                renderPasswords();
+            }
+        }
+
+        function renderPasswords() {
+            const container = document.getElementById('passwordsList');
+            if (passwords.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔐</div><h3>Sin claves</h3></div>';
+                return;
+            }
+            let html = '';
+            passwords.forEach(pwd => {
+                const baseColor = pwd.color || getRandomColor();
+                const bgColorRgba = hexToRgba(baseColor, 0.2);
+                const bgColorRgbaRevealed = hexToRgba(baseColor, 0.4);
+                const backgroundStyle = pwd.revealed ? `background: ${bgColorRgbaRevealed};` : `background: ${bgColorRgba};`;
+                html += `
+                    <div class="item-card ${pwd.revealed ? 'revealed' : ''}" style="border-left-color: ${baseColor}; ${backgroundStyle}">
+                        <div class="item-title">
+                            <span>🔐 ${pwd.name}</span>
+                            <div class="card-actions">
+                                <button class="btn btn-small btn-info" onclick="openPasswordModal('${pwd.id}'); event.stopPropagation();">✍️</button>
+                                <button class="btn btn-small btn-danger" onclick="deleteItem('password', '${pwd.id}'); event.stopPropagation();">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="item-content">
+                            <div class="password-value ${pwd.revealed ? '' : 'password-hidden'}" onclick="togglePasswordReveal('${pwd.id}')" style="cursor: pointer;">
+                                ${pwd.revealed ? pwd.value : '••••••••'}
+                            </div>
+                            <small style="color: #9ca3af; display: block; margin-top: 5px;">
+                                ${pwd.revealed ? '👁️ Clic para ocultar' : '🔒 Clic para mostrar'}
+                            </small>
+                        </div>
+                        ${pwd.notes ? `<div class="item-content" style="margin-top: 10px;">${pwd.notes}</div>` : ''}
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // ====== AI ======
+        function saveAINote(e) {
+            e.preventDefault();
+            const id = document.getElementById('aiNoteId').value;
+            const title = document.getElementById('aiNoteTitle').value.trim();
+            const content = document.getElementById('aiNoteContent').value.trim();
+            if (!title || !content) return showToast('❌ Faltan datos', true);
+            const newNote = { id: id || Date.now().toString(), title, content, created: new Date().toISOString() };
+            if (id) {
+                const index = aiNotes.findIndex(i => i.id === id);
+                if (index !== -1) aiNotes[index] = newNote;
+            } else {
+                aiNotes.unshift(newNote);
+            }
+            if (saveData()) {
+                showToast('✅ IA guardada');
+                closeModal('aiModal');
+                renderAI();
+            }
+        }
+
+        function saveAILink(e) {
+            e.preventDefault();
+            aiLink = document.getElementById('aiLinkInput').value.trim();
+            if (saveData()) {
+                updateAILinkDisplay();
+                showToast('✅ Enlace guardado');
+                closeModal('aiLinkModal');
+            }
+        }
+
+        function updateAILinkDisplay() {
+            const linkElement = document.getElementById('aiLinkDisplay');
+            linkElement.textContent = aiLink || 'https://gemini.google.com';
+            linkElement.href = aiLink || 'https://gemini.google.com';
+        }
+
+        function openAILinkModal() {
+            document.getElementById('aiLinkInput').value = aiLink || 'https://gemini.google.com';
+            openModal('aiLinkModal');
+        }
+
+        function openAIModal(id = null) {
+            document.getElementById('aiForm').reset();
+            document.getElementById('aiNoteId').value = id || '';
+            if (id) {
+                const note = aiNotes.find(i => i.id === id);
+                if (note) {
+                    document.getElementById('aiNoteTitle').value = note.title;
+                    document.getElementById('aiNoteContent').value = note.content;
+                }
+            }
+            openModal('aiModal');
+        }
+
+        function renderAI() {
+            const container = document.getElementById('aiList');
+            if (aiNotes.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🤖</div><h3>Sin recortes</h3></div>';
+                return;
+            }
+            let html = '';
+            aiNotes.forEach(note => {
+                const date = new Date(note.created);
+                html += `
+                    <div class="item-card">
+                        <div class="item-title">
+                            <span>🤖 ${note.title}</span>
+                            <div class="card-actions">
+                                <button class="btn btn-small btn-info" onclick="openAIModal('${note.id}'); event.stopPropagation();">✍️</button>
+                                <button class="btn btn-small btn-danger" onclick="deleteItem('ai', '${note.id}'); event.stopPropagation();">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="item-content">${note.content}</div>
+                        <div class="item-meta">${date.toLocaleDateString('es-ES')}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // ====== MAPAS ======
+        function openMapModal(id = null) {
+            document.getElementById('mapForm').reset();
+            document.getElementById('mapId').value = id || '';
+            if (id) {
+                const item = maps.find(i => i.id === id);
+                if (item) {
+                    document.getElementById('mapTitle').value = item.title;
+                    document.getElementById('mapUrl').value = item.url;
+                    document.getElementById('mapNotes').value = item.notes;
+                }
+            }
+            openModal('mapModal');
+        }
+
+        function saveMap(e) {
+            e.preventDefault();
+            const id = document.getElementById('mapId').value;
+            const title = document.getElementById('mapTitle').value.trim();
+            const url = document.getElementById('mapUrl').value.trim();
+            const notes = document.getElementById('mapNotes').value.trim();
+            if (!title || !url) return showToast('❌ Faltan datos', true);
+            const newMap = { id: id || Date.now().toString(), title, url, notes, created: new Date().toISOString() };
+            if (id) {
+                const index = maps.findIndex(i => i.id === id);
+                if (index !== -1) maps[index] = newMap;
+            } else {
+                maps.unshift(newMap);
+            }
+            if (saveData()) {
+                showToast('✅ Lugar guardado');
+                closeModal('mapModal');
+                renderMaps();
+            }
+        }
+
+        function renderMaps() {
+            const container = document.getElementById('mapsList');
+            if (maps.length === 0) {
+                container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🗺️</div><h3>Sin lugares</h3></div>';
+                return;
+            }
+            let html = '';
+            maps.forEach(map => {
+                html += `
+                    <div class="item-card map-card">
+                        <div class="item-title">
+                            <span>🗺️ ${map.title}</span>
+                            <div class="card-actions">
+                                <button class="btn btn-small btn-info" onclick="openMapModal('${map.id}'); event.stopPropagation();">✍️</button>
+                                <button class="btn btn-small btn-danger" onclick="deleteItem('map', '${map.id}'); event.stopPropagation();">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="item-content">
+                            <a href="${map.url}" target="_blank" class="map-link">🔗 Abrir en Maps</a>
+                        </div>
+                        ${map.notes ? `<div class="item-content" style="margin-top: 10px;">${map.notes}</div>` : ''}
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // ====== ELIMINACIÓN ======
+        function deleteItem(type, id) {
+            if (!confirm('¿Eliminar?')) return;
+            let success = false;
+            if (type === 'health') { health = health.filter(i => i.id !== id); success = true; renderHealth(); }
+            else if (type === 'idea') { ideas = ideas.filter(i => i.id !== id); success = true; renderIdeas(); }
+            else if (type === 'note') { notes = notes.filter(i => i.id !== id); success = true; renderNotes(); }
+            else if (type === 'person') { personArchive = personArchive.filter(i => i.id !== id); success = true; renderPersonArchive(); }
+            else if (type === 'password') { passwords = passwords.filter(i => i.id !== id); success = true; renderPasswords(); }
+            else if (type === 'map') { maps = maps.filter(i => i.id !== id); success = true; renderMaps(); }
+            else if (type === 'ai') { aiNotes = aiNotes.filter(i => i.id !== id); success = true; renderAI(); }
+            if (success && saveData()) showToast('🗑️ Eliminado');
+        }
+
+        // ====== INIT ======
+        loadData();
+        renderCalendar();
+        console.log('🚀 NAVAJA APP v6.3 - PWA Instalable ✅');
+    </script>
+</body>
+</html>
